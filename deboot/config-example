@@ -1,0 +1,11 @@
+# config file example
+# modify below, then rename to 'config'
+TARGET_ARCH=armhf
+DISTRO_MIRROR='http://jp.ports.ubuntu.com/ubuntu-ports'
+DISTRO_CODE=xenial
+USERNAME=pp
+PASSWORD=
+TZ_AREA=Etc
+TZ_CITY=UTC
+LOCALE_LANG=ja_JP.UTF-8
+ADD_LIST=''

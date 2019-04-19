@@ -1,0 +1,114 @@
+PapayaPi installation guide
+Installed and tested on Ubuntu LTS 18.04
+
+Download and unzip PapayaPi.zip in the Home Directory
+
+1. Get the system up to date – you need a PC running Ubuntu 18.04:
+sudo apt-get update
+sudo apt-get upgrade
+
+2. Install additional packages 
+sudo apt-get install build-essential git bison flex libssl-dev pkg-config gcc-arm-linux-gnueabihf binutils-arm-linux-gnueabihf libncurses5-dev u-boot-tools swig python python-dev qemu-user-static debootstrap
+
+3. Configure linux:
+cd papaya
+cd linux
+
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- papayapi_defconfig
+#If you want to configure more in linux:
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- menuconfig
+
+4. Build linux:
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+#After successful build the kernel is found in:
+#arch/arm/boot/zImage
+#The devicetree files are found in:
+#arch/arm/boot/dts/sun8i-v3s-papayapi.dtb (this example is with VGA output for Newhaven 4.3” (480x272) display)
+#Gratulations! You successfully build the linux kernel for the V3s PapayaPI.
+
+4. Configure u-boot:
+cd ..
+cd u-boot
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- papayapi_defconfig
+#If you want to configure more in u-boot:
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- menuconfig
+
+5. Build u-boot:
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+#After a successful build the u-boot file is: u-boot-sunxi-with-spl.bin
+#Gratulations! You successfully build the u-boot for the V3s PapayaPI.
+
+6. Make the distro
+cd ..
+
+#If you want to change the default boot commands, edit boot.cmd in papaya_boot
+#The default values are:
+setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait panic=10 earlyprintk rw quiet
+load mmc 0:1 0x41000000 zImage
+load mmc 0:1 0x41800000 sun8i-v3s-papayapi.dtb
+bootz 0x41000000 - 0x41800000
+
+# Default configuration is – LCD, USB, LAN, WiFi - RTL8192cu – vi USB, 2 SD cards, 3 UARTS, SPI, I2C, Sound, GPIO
+
+7. compile the boot.scr file:
+mkimage -C none -A arm -T script -d boot.cmd boot.scr
+#Gratulations! You succesfully build the u-boot cmd for the V3s PapayaPI.
+
+
+8. Create a bootable SD card
+#Insert the SD card (2, 4, 8, 16 GB) into the SD card reader
+#WARNING!!! ALL THE DATA ON THE CARD WILL BE ERASED!!!
+sudo ./make_sd_card.sh sdX
+#Where “X” is the SD card device identifier – “c”, “d”
+#Example – if the sd card device is /dev/sdy
+#The command line is: sudo ./make_sd_card.sh sdy
+
+#WARNING, YOU DO THIS ON YOUR OWN RISK! 
+#IF YOU PUT A WRONG DRIVE LETTER, ALL THE DATA OF THIS DRIVE WILL BE ERASED PERMANENTLY
+
+9. Boot
+#Insert the card in the Boot SD slot.
+#Conect the PapayaPi to a PC with USB->UART converter (ftdi ?) to uart0 port.
+#Run any terminal application, port parameters 115200, 8,1,N
+#Connect the power (usually 5V via the micro USB connector – USB Power)
+
+10.Login
+user:pp
+password:papaya
+
+11. Config the LAN interface:
+
+#Connect the LAN port to a network with active DHCP
+
+sudo dhclient eth0
+
+12. Add and activate swap partition:
+
+sudo fallocate -l 512M /swapfile
+sudo chown root:root /swapfile
+sudo chmod 0600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+WARNING!!! ANY POWER CUT WHILE THE SWAPP IS ACTIVE WILL RENDER THE FILE SYSTEM UNUSABLE!!!
+13. Deactivate swap partition
+sudo swapon -a
+
+14. The system supports apt repository - 
+sudo apt-get update
+sudo apt-get upgrade
+#and all features of ubuntu-ports xenial InRelease
+
+15. papayapi-ov5640_defconfig and sun8i-v3s-papayapi-ov5640.dtb build supports the ov5640 camera connected to the parallel MIPI interface. This build (which differs to the default one - papayapi_defconfig and sun8i-v3s-papayapi.dtb) will not work with the LCD and UART 1 as the camera pins are shared with them.
+
+The Linux distro is very limited as the V3s resources are limited too. Please apt-get what you need and keep in mind the processor recources.
+Happy PapayaPi-ing 😊
+
+
+
+
+
+
+
+
+
