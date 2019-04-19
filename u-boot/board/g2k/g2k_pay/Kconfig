@@ -1,0 +1,9 @@
+if TARGET_MY_BOARD
+
+config SYS_BOARD
+	default "g2k_pay"
+config SYS_VENDOR
+	default "g2k"
+config SYS_CONFIG_NAME
+	default	"g2k_pay"
+endif
